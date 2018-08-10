@@ -15,7 +15,9 @@
  */
 package com.datastax.oss.driver.internal.core.util;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.IntUnaryOperator;
 
 public class ArrayUtils {
 
@@ -50,20 +52,37 @@ public class ArrayUtils {
   /**
    * Shuffles the first n elements of the array in-place.
    *
+   * @param elements the array to shuffle.
+   * @param n the number of elements to shuffle; must be {@code <= elements.length}.
    * @see <a
    *     href="https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle#The_modern_algorithm">Modern
    *     Fisher-Yates shuffle</a>
    */
-  public static <T> void shuffleHead(T[] elements, int n) {
+  public static <T> void shuffleHead(@NonNull T[] elements, int n) {
+    shuffleHead(elements, n, ThreadLocalRandom.current()::nextInt);
+  }
+
+  /**
+   * Shuffles the first n elements of the array in-place.
+   *
+   * @param elements the array to shuffle.
+   * @param n the number of elements to shuffle; must be {@code <= elements.length}.
+   * @param randomIntSupplier a supplier for random integers bounded by the operator's operand
+   *     (exclusive).
+   * @see <a
+   *     href="https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle#The_modern_algorithm">Modern
+   *     Fisher-Yates shuffle</a>
+   */
+  public static <T> void shuffleHead(
+      @NonNull T[] elements, int n, @NonNull IntUnaryOperator randomIntSupplier) {
     if (n > elements.length) {
       throw new ArrayIndexOutOfBoundsException(
           String.format(
               "Can't shuffle the first %d elements, there are only %d", n, elements.length));
     }
     if (n > 1) {
-      ThreadLocalRandom random = ThreadLocalRandom.current();
       for (int i = n - 1; i > 0; i--) {
-        int j = random.nextInt(i + 1);
+        int j = randomIntSupplier.applyAsInt(i + 1);
         swap(elements, i, j);
       }
     }
