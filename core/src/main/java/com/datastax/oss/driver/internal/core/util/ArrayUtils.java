@@ -17,7 +17,6 @@ package com.datastax.oss.driver.internal.core.util;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.function.IntUnaryOperator;
 
 public class ArrayUtils {
 
@@ -59,7 +58,7 @@ public class ArrayUtils {
    *     Fisher-Yates shuffle</a>
    */
   public static <T> void shuffleHead(@NonNull T[] elements, int n) {
-    shuffleHead(elements, n, ThreadLocalRandom.current()::nextInt);
+    shuffleHead(elements, n, ThreadLocalRandom.current());
   }
 
   /**
@@ -67,14 +66,14 @@ public class ArrayUtils {
    *
    * @param elements the array to shuffle.
    * @param n the number of elements to shuffle; must be {@code <= elements.length}.
-   * @param randomIntSupplier a supplier for random integers bounded by the operator's operand
-   *     (exclusive).
+   * @param random the {@link ThreadLocalRandom} instance to use. This is mainly intended to
+   *     facilitate tests.
    * @see <a
    *     href="https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle#The_modern_algorithm">Modern
    *     Fisher-Yates shuffle</a>
    */
   public static <T> void shuffleHead(
-      @NonNull T[] elements, int n, @NonNull IntUnaryOperator randomIntSupplier) {
+      @NonNull T[] elements, int n, @NonNull ThreadLocalRandom random) {
     if (n > elements.length) {
       throw new ArrayIndexOutOfBoundsException(
           String.format(
@@ -82,7 +81,7 @@ public class ArrayUtils {
     }
     if (n > 1) {
       for (int i = n - 1; i > 0; i--) {
-        int j = randomIntSupplier.applyAsInt(i + 1);
+        int j = random.nextInt(i + 1);
         swap(elements, i, j);
       }
     }

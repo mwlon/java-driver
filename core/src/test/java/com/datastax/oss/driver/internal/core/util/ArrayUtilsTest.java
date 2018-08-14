@@ -17,7 +17,9 @@ package com.datastax.oss.driver.internal.core.util;
 
 import static com.datastax.oss.driver.Assertions.assertThat;
 
+import java.util.concurrent.ThreadLocalRandom;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 public class ArrayUtilsTest {
 
@@ -80,8 +82,15 @@ public class ArrayUtilsTest {
   @Test
   public void should_shuffle_head() {
     String[] array = {"a", "b", "c", "d", "e"};
-    // shifts elements by 1 to the right
-    ArrayUtils.shuffleHead(array, 3, (i) -> i - 2);
+    ThreadLocalRandom random = Mockito.mock(ThreadLocalRandom.class);
+    Mockito.when(random.nextInt(Mockito.anyInt()))
+        .thenAnswer(
+            (invocation) -> {
+              int i = invocation.getArgument(0);
+              // shifts elements by 1 to the right
+              return i - 2;
+            });
+    ArrayUtils.shuffleHead(array, 3, random);
     assertThat(array[0]).isEqualTo("c");
     assertThat(array[1]).isEqualTo("a");
     assertThat(array[2]).isEqualTo("b");
